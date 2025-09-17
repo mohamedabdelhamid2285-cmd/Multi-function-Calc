@@ -5,6 +5,8 @@ import { useCalculator } from '@/contexts/CalculatorContext';
 import { useInterstitialAd } from '@/hooks/useInterstitialAd';
 import BannerAdComponent from '@/components/BannerAdComponent';
 
+import { useEffect } from 'react';
+
 export default function StatisticsScreen() {
   const { state } = useCalculator();
   const { showInterstitialAd } = useInterstitialAd();

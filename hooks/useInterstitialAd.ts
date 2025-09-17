@@ -1,9 +1,25 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { InterstitialAd, AdEventType, TestIds } from 'react-native-google-mobile-ads';
+import { Platform } from 'react-native';
 import { useCalculator } from '@/contexts/CalculatorContext';
 
+// Conditional import for AdMob (only on native platforms)
+let InterstitialAd: any = null;
+let AdEventType: any = null;
+let TestIds: any = null;
+
+if (Platform.OS !== 'web') {
+  try {
+    const AdMob = require('react-native-google-mobile-ads');
+    InterstitialAd = AdMob.InterstitialAd;
+    AdEventType = AdMob.AdEventType;
+    TestIds = AdMob.TestIds;
+  } catch (error) {
+    console.log('AdMob not available:', error);
+  }
+}
+
 // Test ID for interstitial ads - replace with your actual ad unit ID in production
-const INTERSTITIAL_AD_UNIT_ID = TestIds.INTERSTITIAL;
+const INTERSTITIAL_AD_UNIT_ID = TestIds?.INTERSTITIAL || 'ca-app-pub-3940256099942544/1033173712';
 
 export const useInterstitialAd = () => {
   const { state } = useCalculator();
@@ -13,6 +29,12 @@ export const useInterstitialAd = () => {
 
   // Initialize the interstitial ad
   useEffect(() => {
+    // Don't initialize on web or if AdMob is not available
+    if (Platform.OS === 'web' || !InterstitialAd) {
+      console.log('Interstitial ads not supported on this platform');
+      return;
+    }
+
     if (!interstitialRef.current) {
       interstitialRef.current = InterstitialAd.createForAdRequest(INTERSTITIAL_AD_UNIT_ID, {
         requestNonPersonalizedAdsOnly: true,
@@ -58,6 +80,11 @@ export const useInterstitialAd = () => {
 
   // Function to load the ad
   const loadAd = useCallback(() => {
+    if (Platform.OS === 'web' || !InterstitialAd) {
+      console.log('Interstitial ads not supported on this platform');
+      return;
+    }
+
     if (state.isProUser) {
       console.log('User is Pro - not loading interstitial ad');
       return;
@@ -72,6 +99,11 @@ export const useInterstitialAd = () => {
 
   // Function to show the ad
   const showAd = useCallback(() => {
+    if (Platform.OS === 'web' || !InterstitialAd) {
+      console.log('Interstitial ads not supported on this platform');
+      return;
+    }
+
     if (state.isProUser) {
       console.log('User is Pro - not showing interstitial ad');
       return;
