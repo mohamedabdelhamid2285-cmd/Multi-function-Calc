@@ -76,6 +76,25 @@ export default function SettingsScreen() {
             </View>
           </View>
 
+          {/* Pro User Settings */}
+          <View style={[styles.settingCard, { backgroundColor: cardBgColor }]}>
+            <Text style={[styles.cardTitle, { color: textColor }]}>Premium</Text>
+            <View style={styles.settingRow}>
+              <Text style={[styles.settingLabel, { color: textColor }]}>
+                Pro User Status: {state.isProUser ? 'Active' : 'Free'}
+              </Text>
+              <Switch
+                value={state.isProUser}
+                onValueChange={(value) => dispatch({ type: 'SET_PRO_USER', payload: value })}
+                trackColor={{ false: '#E0E0E0', true: '#3B82F6' }}
+                thumbColor={state.isProUser ? '#FFFFFF' : '#F4F3F4'}
+              />
+            </View>
+            <Text style={[styles.settingLabel, { color: textColor, fontSize: 12, opacity: 0.7 }]}>
+              Toggle this to simulate Pro user experience (removes all ads)
+            </Text>
+          </View>
+
           <View style={[styles.settingCard, { backgroundColor: cardBgColor }]}>
             <Text style={[styles.cardTitle, { color: textColor }]}>Memory</Text>
             <View style={styles.settingRow}>
@@ -96,6 +115,9 @@ export default function SettingsScreen() {
             <View style={styles.settingColumn}>
               <Text style={[styles.settingLabel, { color: textColor }]}>
                 Calculation History ({state.history.length} entries)
+              </Text>
+              <Text style={[styles.settingLabel, { color: textColor }]}>
+                Main Calculator Count: {state.calculationCount}/10 (until next ad)
               </Text>
               {state.history.length > 0 && (
                 <ScrollView style={styles.historyList} nestedScrollEnabled>

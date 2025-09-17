@@ -57,16 +57,27 @@
     } from 'react-native';
     import { LinearGradient } from 'expo-linear-gradient';
     import { useCalculator } from '@/contexts/CalculatorContext';
+    import { useInterstitialAd } from '@/hooks/useInterstitialAd';
     import Display from '@/components/Display';
     import CalculatorButton from '@/components/CalculatorButton';
 
     export default function CalculatorScreen() {
-      const { state, dispatch } = useCalculator();
+      const { state, dispatch, shouldShowInterstitialAd, markInterstitialAdShown } = useCalculator();
+      const { showInterstitialAd } = useInterstitialAd();
       const isDark = state.theme === 'dark';
 
       useEffect(() => {
         console.log('CalculatorScreen: Component mounted/re-rendered');
       }, [state.theme, state.shiftActive, state.alphaActive, state.storeActive]); // Log on initial mount, theme, and shift changes
+
+      // Check if we should show interstitial ad after calculation
+      useEffect(() => {
+        if (shouldShowInterstitialAd()) {
+          console.log('Showing interstitial ad after 10 calculations');
+          showInterstitialAd();
+          markInterstitialAdShown();
+        }
+      }, [state.calculationCount, shouldShowInterstitialAd, showInterstitialAd, markInterstitialAdShown]);
 
       const backgroundColors = isDark ? ['#121212', '#1E1E1E'] : ['#F3F4F6', '#FFFFFF'];
       const textColor = isDark ? '#FFFFFF' : '#1F2937';

@@ -2,9 +2,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useCalculator } from '@/contexts/CalculatorContext';
+import { useInterstitialAd } from '@/hooks/useInterstitialAd';
+import BannerAdComponent from '@/components/BannerAdComponent';
 
 export default function MatrixScreen() {
   const { state } = useCalculator();
+  const { showInterstitialAd } = useInterstitialAd();
   const isDark = state.theme === 'dark';
 
   const backgroundColors = isDark ? ['#121212', '#1E1E1E'] : ['#F3F4F6', '#FFFFFF'];
@@ -22,6 +25,7 @@ export default function MatrixScreen() {
   const [resultMatrix, setResultMatrix] = useState<number[][] | null>(null);
   const [resultScalar, setResultScalar] = useState<number | null>(null); // For determinant
   const [currentOperation, setCurrentOperation] = useState('');
+  const [hasShownResult, setHasShownResult] = useState(false);
 
   const createMatrix = (rows: string, cols: string) => {
     const numRows = parseInt(rows);
@@ -57,6 +61,7 @@ export default function MatrixScreen() {
   const calculateMatrixResult = useCallback(() => {
     setResultMatrix(null);
     setResultScalar(null);
+    setHasShownResult(false);
 
     const numRowsA = matrixA.length;
     const numColsA = matrixA[0]?.length || 0;
@@ -74,6 +79,7 @@ export default function MatrixScreen() {
             Array(numColsA).fill(0).map((_, c) => matrixA[r][c] + matrixB[r][c])
           );
           setResultMatrix(sumMatrix);
+          setHasShownResult(true);
           break;
 
         case 'subtract':
@@ -85,6 +91,7 @@ export default function MatrixScreen() {
             Array(numColsA).fill(0).map((_, c) => matrixA[r][c] - matrixB[r][c])
           );
           setResultMatrix(diffMatrix);
+          setHasShownResult(true);
           break;
 
         case 'multiply':
@@ -102,6 +109,7 @@ export default function MatrixScreen() {
             })
           );
           setResultMatrix(productMatrix);
+          setHasShownResult(true);
           break;
 
         case 'transposeA':
@@ -109,6 +117,7 @@ export default function MatrixScreen() {
             Array(numRowsA).fill(0).map((_, r) => matrixA[r][c])
           );
           setResultMatrix(transposedMatrixA);
+          setHasShownResult(true);
           break;
 
         case 'determinantA':
@@ -118,14 +127,17 @@ export default function MatrixScreen() {
           }
           if (numRowsA === 1) {
             setResultScalar(matrixA[0][0]);
+            setHasShownResult(true);
           } else if (numRowsA === 2) {
             setResultScalar(matrixA[0][0] * matrixA[1][1] - matrixA[0][1] * matrixA[1][0]);
+            setHasShownResult(true);
           } else if (numRowsA === 3) {
             const det =
               matrixA[0][0] * (matrixA[1][1] * matrixA[2][2] - matrixA[1][2] * matrixA[2][1]) -
               matrixA[0][1] * (matrixA[1][0] * matrixA[2][2] - matrixA[1][2] * matrixA[2][0]) +
               matrixA[0][2] * (matrixA[1][0] * matrixA[2][1] - matrixA[1][1] * matrixA[2][0]);
             setResultScalar(det);
+            setHasShownResult(true);
           } else {
             Alert.alert("Error", "Determinant calculation for matrices larger than 3x3 is not implemented yet.");
           }
@@ -139,6 +151,14 @@ export default function MatrixScreen() {
       Alert.alert("Calculation Error", "An error occurred during matrix calculation.");
     }
   }, [matrixA, matrixB, currentOperation]);
+
+  // Show interstitial ad after successful calculation
+  useEffect(() => {
+    if (hasShownResult && !state.isProUser) {
+      console.log('Matrix calculation completed - showing interstitial ad');
+      showInterstitialAd();
+    }
+  }, [hasShownResult, state.isProUser, showInterstitialAd]);
 
   useEffect(() => {
     if (currentOperation) {
@@ -273,6 +293,9 @@ export default function MatrixScreen() {
             )}
           </View>
         </ScrollView>
+        
+        {/* Banner Ad at bottom */}
+        <BannerAdComponent />
       </LinearGradient>
     </SafeAreaView>
   );

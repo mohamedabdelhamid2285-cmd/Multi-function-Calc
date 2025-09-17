@@ -2,9 +2,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useCalculator } from '@/contexts/CalculatorContext';
+import { useInterstitialAd } from '@/hooks/useInterstitialAd';
+import BannerAdComponent from '@/components/BannerAdComponent';
 
 export default function VectorScreen() {
   const { state } = useCalculator();
+  const { showInterstitialAd } = useInterstitialAd();
   const isDark = state.theme === 'dark';
 
   const backgroundColors = isDark ? ['#121212', '#1E1E1E'] : ['#F3F4F6', '#FFFFFF'];
@@ -18,6 +21,7 @@ export default function VectorScreen() {
   const [resultVector, setResultVector] = useState<number[] | null>(null);
   const [resultScalar, setResultScalar] = useState<number | null>(null);
   const [currentOperation, setCurrentOperation] = useState('');
+  const [hasShownResult, setHasShownResult] = useState(false);
 
   const handleVectorAChange = (text: string, index: number) => {
     const newVector = [...vectorA];
@@ -34,6 +38,7 @@ export default function VectorScreen() {
   const calculateResult = useCallback(() => {
     setResultVector(null);
     setResultScalar(null);
+    setHasShownResult(false);
 
     const a = vectorA;
     const b = vectorB;
@@ -46,12 +51,15 @@ export default function VectorScreen() {
     switch (currentOperation) {
       case 'add':
         setResultVector(a.map((val, i) => val + b[i]));
+        setHasShownResult(true);
         break;
       case 'subtract':
         setResultVector(a.map((val, i) => val - b[i]));
+        setHasShownResult(true);
         break;
       case 'dotProduct':
         setResultScalar(a.reduce((sum, val, i) => sum + val * b[i], 0));
+        setHasShownResult(true);
         break;
       case 'crossProduct':
         if (a.length !== 3 || b.length !== 3) {
@@ -63,14 +71,24 @@ export default function VectorScreen() {
           a[2] * b[0] - a[0] * b[2],
           a[0] * b[1] - a[1] * b[0],
         ]);
+        setHasShownResult(true);
         break;
       case 'magnitudeA':
         setResultScalar(Math.sqrt(a.reduce((sum, val) => sum + val * val, 0)));
+        setHasShownResult(true);
         break;
       default:
         break;
     }
   }, [vectorA, vectorB, currentOperation]);
+
+  // Show interstitial ad after successful calculation
+  useEffect(() => {
+    if (hasShownResult && !state.isProUser) {
+      console.log('Vector calculation completed - showing interstitial ad');
+      showInterstitialAd();
+    }
+  }, [hasShownResult, state.isProUser, showInterstitialAd]);
 
   useEffect(() => {
     if (currentOperation) {
@@ -155,6 +173,9 @@ export default function VectorScreen() {
             )}
           </View>
         </ScrollView>
+        
+        {/* Banner Ad at bottom */}
+        <BannerAdComponent />
       </LinearGradient>
     </SafeAreaView>
   );

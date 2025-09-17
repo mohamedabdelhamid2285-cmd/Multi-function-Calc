@@ -15,6 +15,8 @@ interface CalculatorState {
   alphaActive: boolean; // Add alphaActive state
   storeActive: boolean; // Add storeActive state for STO mode
   variables: { [key: string]: number }; // Store variables (A, B, C, X, Y)
+  calculationCount: number; // Track calculation count for ad display
+  isProUser: boolean; // Track if user has purchased Pro version
 }
 
 type CalculatorAction =
@@ -36,7 +38,10 @@ type CalculatorAction =
   | { type: 'TOGGLE_ALPHA' } // Action for toggling alpha mode
   | { type: 'TOGGLE_STORE' } // Action for toggling store mode
   | { type: 'STORE_VARIABLE'; payload: { variableName: string; value: number } } // Action to store a variable
-  | { type: 'INSERT_VARIABLE'; payload: string }; // Action to insert a variable into expression
+  | { type: 'INSERT_VARIABLE'; payload: string } // Action to insert a variable into expression
+  | { type: 'INCREMENT_CALCULATION_COUNT' } // Action to increment calculation count
+  | { type: 'RESET_CALCULATION_COUNT' } // Action to reset calculation count
+  | { type: 'SET_PRO_USER'; payload: boolean }; // Action to set Pro user status
 
 const initialState: CalculatorState = {
   expression: '',
@@ -57,6 +62,8 @@ const initialState: CalculatorState = {
     'X': 0,
     'Y': 0,
   },
+  calculationCount: 0, // Initialize calculation count
+  isProUser: false, // Default to free user
 };
 
 // Helper function to check if a character is an operator
@@ -354,6 +361,27 @@ const calculatorReducer = (state: CalculatorState, action: CalculatorAction): Ca
       };
       return newState;
 
+    case 'INCREMENT_CALCULATION_COUNT':
+      console.log('Incrementing calculation count from', state.calculationCount, 'to', state.calculationCount + 1);
+      return {
+        ...state,
+        calculationCount: state.calculationCount + 1,
+      };
+
+    case 'RESET_CALCULATION_COUNT':
+      console.log('Resetting calculation count to 0');
+      return {
+        ...state,
+        calculationCount: 0,
+      };
+
+    case 'SET_PRO_USER':
+      console.log('Setting Pro user status to:', action.payload);
+      return {
+        ...state,
+        isProUser: action.payload,
+      };
+
     case 'EQUALS':
       try {
         if (!state.expression) return resetModes(state);
@@ -391,6 +419,7 @@ const calculatorReducer = (state: CalculatorState, action: CalculatorAction): Ca
           history: newHistory,
           error: null,
           lastInputType: 'equals', // Mark last input as equals
+          calculationCount: state.calculationCount + 1, // Increment calculation count
         };
         return resetModes(newState);
       } catch (error) {
@@ -413,6 +442,8 @@ const calculatorReducer = (state: CalculatorState, action: CalculatorAction): Ca
 interface CalculatorContextType {
   state: CalculatorState;
   dispatch: React.Dispatch<CalculatorAction>;
+  shouldShowInterstitialAd: () => boolean;
+  markInterstitialAdShown: () => void;
 }
 
 const CalculatorContext = createContext<CalculatorContextType | undefined>(undefined);
@@ -424,8 +455,29 @@ interface CalculatorProviderProps {
 export const CalculatorProvider: React.FC<CalculatorProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(calculatorReducer, initialState);
 
+  // Function to check if interstitial ad should be shown (every 10 calculations)
+  const shouldShowInterstitialAd = () => {
+    if (state.isProUser) {
+      console.log('User is Pro - not showing interstitial ad');
+      return false;
+    }
+    const shouldShow = state.calculationCount >= 10;
+    console.log('Should show interstitial ad:', shouldShow, '(count:', state.calculationCount, ')');
+    return shouldShow;
+  };
+
+  // Function to mark that interstitial ad was shown and reset counter
+  const markInterstitialAdShown = () => {
+    console.log('Marking interstitial ad as shown, resetting calculation count');
+    dispatch({ type: 'RESET_CALCULATION_COUNT' });
+  };
   return (
-    <CalculatorContext.Provider value={{ state, dispatch }}>
+    <CalculatorContext.Provider value={{ 
+      state, 
+      dispatch, 
+      shouldShowInterstitialAd, 
+      markInterstitialAdShown 
+    }}>
       {children}
     </CalculatorContext.Provider>
   );

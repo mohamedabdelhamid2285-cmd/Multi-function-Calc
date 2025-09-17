@@ -2,9 +2,12 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TextInput, TouchableOpacity, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useCalculator } from '@/contexts/CalculatorContext';
+import { useInterstitialAd } from '@/hooks/useInterstitialAd';
+import BannerAdComponent from '@/components/BannerAdComponent';
 
 export default function StatisticsScreen() {
   const { state } = useCalculator();
+  const { showInterstitialAd } = useInterstitialAd();
   const isDark = state.theme === 'dark';
 
   const backgroundColors = isDark ? ['#121212', '#1E1E1E'] : ['#F3F4F6', '#FFFFFF'];
@@ -15,6 +18,7 @@ export default function StatisticsScreen() {
 
   const [dataInput, setDataInput] = useState('');
   const [results, setResults] = useState<{ [key: string]: number | string | null }>({});
+  const [hasShownResult, setHasShownResult] = useState(false);
 
   const parseData = (input: string): number[] => {
     return input.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
@@ -66,6 +70,7 @@ export default function StatisticsScreen() {
     const data = parseData(dataInput);
     if (data.length === 0) {
       setResults({ error: 'Please enter valid numbers.' });
+      setHasShownResult(false);
       return;
     }
 
@@ -73,25 +78,38 @@ export default function StatisticsScreen() {
     switch (type) {
       case 'mean':
         newResults.mean = calculateMean(data);
+        setHasShownResult(true);
         break;
       case 'median':
         newResults.median = calculateMedian(data);
+        setHasShownResult(true);
         break;
       case 'mode':
         newResults.mode = calculateMode(data);
+        setHasShownResult(true);
         break;
       case 'stdDev':
         newResults.stdDev = calculateStdDev(data);
+        setHasShownResult(true);
         break;
       case 'all':
         newResults.mean = calculateMean(data);
         newResults.median = calculateMedian(data);
         newResults.mode = calculateMode(data);
         newResults.stdDev = calculateStdDev(data);
+        setHasShownResult(true);
         break;
     }
     setResults(newResults);
   };
+
+  // Show interstitial ad after successful calculation
+  useEffect(() => {
+    if (hasShownResult && !state.isProUser) {
+      console.log('Statistics calculation completed - showing interstitial ad');
+      showInterstitialAd();
+    }
+  }, [hasShownResult, state.isProUser, showInterstitialAd]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -159,6 +177,9 @@ export default function StatisticsScreen() {
             )}
           </View>
         </ScrollView>
+        
+        {/* Banner Ad at bottom */}
+        <BannerAdComponent />
       </LinearGradient>
     </SafeAreaView>
   );
