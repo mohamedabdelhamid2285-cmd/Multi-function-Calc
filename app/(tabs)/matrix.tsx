@@ -155,7 +155,6 @@ export default function MatrixScreen() {
   // Show interstitial ad after successful calculation
   useEffect(() => {
     if (hasShownResult && !state.isProUser) {
-      console.log('Matrix calculation completed - showing interstitial ad');
       showInterstitialAd();
     }
   }, [hasShownResult, state.isProUser, showInterstitialAd]);

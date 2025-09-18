@@ -12,17 +12,17 @@ export default function RootLayout() {
   useEffect(() => {
     if (Platform.OS !== 'web') {
       try {
-        const mobileAds = require('react-native-google-mobile-ads').default;
+        const { default: mobileAds } = require('react-native-google-mobile-ads');
         mobileAds()
           .initialize()
           .then((adapterStatuses: any) => {
-            console.log('Google Mobile Ads initialized:', adapterStatuses);
+            console.log('Google Mobile Ads initialized successfully');
           })
           .catch((error: any) => {
-            console.error('Failed to initialize Google Mobile Ads:', error);
+            console.log('AdMob initialization skipped - not available in preview');
           });
       } catch (error) {
-        console.log('AdMob not available on this platform:', error);
+        // Silently handle - AdMob not available in web preview
       }
     }
   }, []);

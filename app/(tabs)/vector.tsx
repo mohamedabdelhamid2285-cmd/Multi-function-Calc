@@ -85,7 +85,6 @@ export default function VectorScreen() {
   // Show interstitial ad after successful calculation
   useEffect(() => {
     if (hasShownResult && !state.isProUser) {
-      console.log('Vector calculation completed - showing interstitial ad');
       showInterstitialAd();
     }
   }, [hasShownResult, state.isProUser, showInterstitialAd]);

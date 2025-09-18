@@ -9,12 +9,12 @@ let TestIds: any = null;
 
 if (Platform.OS !== 'web') {
   try {
-    const AdMob = require('react-native-google-mobile-ads');
-    InterstitialAd = AdMob.InterstitialAd;
-    AdEventType = AdMob.AdEventType;
-    TestIds = AdMob.TestIds;
+    const { default: mobileAds, InterstitialAd: InterstitialAdClass, AdEventType: AdEventTypeClass, TestIds: TestIdsClass } = require('react-native-google-mobile-ads');
+    InterstitialAd = InterstitialAdClass;
+    AdEventType = AdEventTypeClass;
+    TestIds = TestIdsClass;
   } catch (error) {
-    console.log('AdMob not available:', error);
+    // Silently handle the error - AdMob not available
   }
 }
 
@@ -31,7 +31,6 @@ export const useInterstitialAd = () => {
   useEffect(() => {
     // Don't initialize on web or if AdMob is not available
     if (Platform.OS === 'web' || !InterstitialAd) {
-      console.log('Interstitial ads not supported on this platform');
       return;
     }
 
@@ -44,7 +43,7 @@ export const useInterstitialAd = () => {
       const unsubscribeLoaded = interstitialRef.current.addAdEventListener(
         AdEventType.LOADED,
         () => {
-          console.log('Interstitial ad loaded');
+          console.log('Native interstitial ad loaded');
           isLoadedRef.current = true;
           isLoadingRef.current = false;
         }
@@ -53,7 +52,7 @@ export const useInterstitialAd = () => {
       const unsubscribeError = interstitialRef.current.addAdEventListener(
         AdEventType.ERROR,
         (error) => {
-          console.log('Interstitial ad failed to load:', error);
+          console.log('Native interstitial ad failed to load:', error);
           isLoadedRef.current = false;
           isLoadingRef.current = false;
         }
@@ -62,7 +61,7 @@ export const useInterstitialAd = () => {
       const unsubscribeClosed = interstitialRef.current.addAdEventListener(
         AdEventType.CLOSED,
         () => {
-          console.log('Interstitial ad closed');
+          console.log('Native interstitial ad closed');
           isLoadedRef.current = false;
           // Preload the next ad
           loadAd();
@@ -80,18 +79,15 @@ export const useInterstitialAd = () => {
 
   // Function to load the ad
   const loadAd = useCallback(() => {
-    if (Platform.OS === 'web' || !InterstitialAd) {
-      console.log('Interstitial ads not supported on this platform');
+    if (Platform.OS === 'web' || !InterstitialAd || !interstitialRef.current) {
       return;
     }
 
     if (state.isProUser) {
-      console.log('User is Pro - not loading interstitial ad');
       return;
     }
 
-    if (interstitialRef.current && !isLoadingRef.current && !isLoadedRef.current) {
-      console.log('Loading interstitial ad...');
+    if (!isLoadingRef.current && !isLoadedRef.current) {
       isLoadingRef.current = true;
       interstitialRef.current.load();
     }
@@ -99,21 +95,19 @@ export const useInterstitialAd = () => {
 
   // Function to show the ad
   const showAd = useCallback(() => {
-    if (Platform.OS === 'web' || !InterstitialAd) {
-      console.log('Interstitial ads not supported on this platform');
+    if (Platform.OS === 'web' || !InterstitialAd || !interstitialRef.current) {
+      // Silently skip on web or when AdMob is not available
       return;
     }
 
     if (state.isProUser) {
-      console.log('User is Pro - not showing interstitial ad');
       return;
     }
 
     if (interstitialRef.current && isLoadedRef.current) {
-      console.log('Showing interstitial ad...');
+      console.log('Showing native interstitial ad...');
       interstitialRef.current.show();
     } else {
-      console.log('Interstitial ad not ready to show');
       // Try to load ad for next time
       loadAd();
     }

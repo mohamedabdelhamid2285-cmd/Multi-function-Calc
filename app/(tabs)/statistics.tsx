@@ -108,7 +108,6 @@ export default function StatisticsScreen() {
   // Show interstitial ad after successful calculation
   useEffect(() => {
     if (hasShownResult && !state.isProUser) {
-      console.log('Statistics calculation completed - showing interstitial ad');
       showInterstitialAd();
     }
   }, [hasShownResult, state.isProUser, showInterstitialAd]);

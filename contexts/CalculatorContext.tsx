@@ -458,17 +458,14 @@ export const CalculatorProvider: React.FC<CalculatorProviderProps> = ({ children
   // Function to check if interstitial ad should be shown (every 10 calculations)
   const shouldShowInterstitialAd = () => {
     if (state.isProUser) {
-      console.log('User is Pro - not showing interstitial ad');
       return false;
     }
     const shouldShow = state.calculationCount >= 10;
-    console.log('Should show interstitial ad:', shouldShow, '(count:', state.calculationCount, ')');
     return shouldShow;
   };
 
   // Function to mark that interstitial ad was shown and reset counter
   const markInterstitialAdShown = () => {
-    console.log('Marking interstitial ad as shown, resetting calculation count');
     dispatch({ type: 'RESET_CALCULATION_COUNT' });
   };
   return (

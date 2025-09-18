@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Platform } from 'react-native';
+import { View, StyleSheet, Platform, Text } from 'react-native';
 import { useCalculator } from '@/contexts/CalculatorContext';
+import BannerAd from './BannerAd';
 
 // Conditional import for AdMob (only on native platforms)
 let BannerAd: any = null;
@@ -10,7 +11,7 @@ let TestIds: any = null;
 if (Platform.OS !== 'web') {
   try {
     const AdMob = require('react-native-google-mobile-ads');
-    BannerAd = AdMob.BannerAd;
+    BannerAdNative = AdMob.BannerAd;
     BannerAdSize = AdMob.BannerAdSize;
     TestIds = AdMob.TestIds;
   } catch (error) {
@@ -26,41 +27,34 @@ interface BannerAdComponentProps {
 }
 
 export const BannerAdComponent: React.FC<BannerAdComponentProps> = ({ 
-  size = BannerAdSize?.FULL_BANNER || 'FULL_BANNER'
+  size = BannerAdSize?.FULL_BANNER
 }) => {
   const { state } = useCalculator();
-  const [adLoaded, setAdLoaded] = useState(false);
-  const [adError, setAdError] = useState(false);
 
   // Don't render anything if user is Pro
   if (state.isProUser) {
-    console.log('User is Pro - not showing banner ad');
     return null;
   }
 
-  // Don't render on web platform as AdMob doesn't support it
-  if (Platform.OS === 'web' || !BannerAd) {
-    console.log('Web platform - not showing banner ad');
-    return null;
+  // Show fallback banner ad on web or when AdMob is not available
+  if (Platform.OS === 'web' || !BannerAdNative) {
+    return <BannerAd />;
   }
 
+  // Show real AdMob banner on native platforms
   return (
     <View style={styles.container}>
-      <BannerAd
+      <BannerAdNative
         unitId={BANNER_AD_UNIT_ID}
         size={size}
         requestOptions={{
           requestNonPersonalizedAdsOnly: true,
         }}
         onAdLoaded={() => {
-          console.log('Banner ad loaded');
-          setAdLoaded(true);
-          setAdError(false);
+          console.log('Native banner ad loaded');
         }}
         onAdFailedToLoad={(error) => {
-          console.log('Banner ad failed to load:', error);
-          setAdLoaded(false);
-          setAdError(true);
+          console.log('Native banner ad failed to load:', error);
         }}
       />
     </View>
@@ -72,7 +66,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'transparent',
-    paddingVertical: 8,
   },
 });
 
