@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Platform, Text } from 'react-native';
 import { useCalculator } from '@/contexts/CalculatorContext';
-import BannerAd from './BannerAd';
+import FallbackBannerAd from './BannerAd';
 
 // Conditional import for AdMob (only on native platforms)
-let BannerAd: any = null;
+let BannerAdNative: any = null;
 let BannerAdSize: any = null;
 let TestIds: any = null;
 
@@ -38,7 +38,7 @@ export const BannerAdComponent: React.FC<BannerAdComponentProps> = ({
 
   // Show fallback banner ad on web or when AdMob is not available
   if (Platform.OS === 'web' || !BannerAdNative) {
-    return <BannerAd />;
+    return <FallbackBannerAd />;
   }
 
   // Show real AdMob banner on native platforms
