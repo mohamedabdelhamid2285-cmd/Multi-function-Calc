@@ -25,7 +25,6 @@ import React, { useEffect } from 'react';
       // Check if we should show interstitial ad after calculation
       useEffect(() => {
         if (shouldShowInterstitialAd()) {
-          console.log('Showing interstitial ad after 10 calculations');
           showInterstitialAd();
           markInterstitialAdShown();
         }
