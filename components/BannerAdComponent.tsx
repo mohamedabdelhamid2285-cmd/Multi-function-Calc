@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Platform, Text } from 'react-native';
+import React from 'react';
+import { View, StyleSheet, Platform } from 'react-native';
 import { useCalculator } from '@/contexts/CalculatorContext';
 import FallbackBannerAd from './BannerAd';
 
@@ -15,7 +15,7 @@ if (Platform.OS !== 'web') {
     BannerAdSize = AdMob.BannerAdSize;
     TestIds = AdMob.TestIds;
   } catch (error) {
-    console.log('AdMob not available:', error);
+    // Silently handle - AdMob not available
   }
 }
 
@@ -53,7 +53,7 @@ export const BannerAdComponent: React.FC<BannerAdComponentProps> = ({
         onAdLoaded={() => {
           console.log('Native banner ad loaded');
         }}
-        onAdFailedToLoad={(error) => {
+        onAdFailedToLoad={(error: any) => {
           console.log('Native banner ad failed to load:', error);
         }}
       />

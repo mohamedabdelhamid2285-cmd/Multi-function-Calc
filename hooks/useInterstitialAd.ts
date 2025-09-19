@@ -14,7 +14,7 @@ if (Platform.OS !== 'web') {
     AdEventType = AdEventTypeClass;
     TestIds = TestIdsClass;
   } catch (error) {
-    // Silently handle the error - AdMob not available
+    // Silently handle - AdMob not available
   }
 }
 
@@ -23,7 +23,7 @@ const INTERSTITIAL_AD_UNIT_ID = TestIds?.INTERSTITIAL || 'ca-app-pub-39402560999
 
 export const useInterstitialAd = () => {
   const { state } = useCalculator();
-  const interstitialRef = useRef<InterstitialAd | null>(null);
+  const interstitialRef = useRef<any>(null);
   const isLoadingRef = useRef(false);
   const isLoadedRef = useRef(false);
 

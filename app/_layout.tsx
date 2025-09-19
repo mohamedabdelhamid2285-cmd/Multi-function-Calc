@@ -15,11 +15,11 @@ export default function RootLayout() {
         const { default: mobileAds } = require('react-native-google-mobile-ads');
         mobileAds()
           .initialize()
-          .then((adapterStatuses: any) => {
-            console.log('Google Mobile Ads initialized successfully');
+          .then(() => {
+            // AdMob initialized successfully
           })
-          .catch((error: any) => {
-            console.log('AdMob initialization skipped - not available in preview');
+          .catch(() => {
+            // AdMob initialization failed - silently handle
           });
       } catch (error) {
         // Silently handle - AdMob not available in web preview
