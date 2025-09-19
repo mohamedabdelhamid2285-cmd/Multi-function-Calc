@@ -19,23 +19,25 @@
 
     ## AdMob Integration
 
-    The app includes a comprehensive Google AdMob monetization strategy:
+    The app is prepared for Google AdMob monetization strategy:
 
     ### Ad Types
-    - **Banner Ads**: Displayed at the bottom of Matrix, Vector, and Statistics screens
-    - **Interstitial Ads**: Shown after every 10 calculations on the main calculator, and after successful calculations on advanced screens
+    - **Banner Ads**: Placeholder ads displayed at the bottom of Matrix, Vector, and Statistics screens (ready for AdMob integration)
+    - **Interstitial Ads**: Logic ready for showing after every 10 calculations on the main calculator, and after successful calculations on advanced screens
 
     ### Pro User Support
     - Toggle Pro user status in Settings to remove all ads
     - Pro users see no banner or interstitial ads anywhere in the app
 
-    ### Test Configuration
-    - Currently configured with Google AdMob Test IDs
+    ### AdMob Setup Required
+    - Install `react-native-google-mobile-ads` package
+    - Configure with your Google AdMob Test IDs
     - Replace with your actual Ad Unit IDs before publishing
 
-    ### Ad Unit IDs to Replace
-    - Banner Ad Test ID: `ca-app-pub-3940256099942544/6300978111`
-    - Interstitial Ad Test ID: `ca-app-pub-3940256099942544/1033173712`
+    ### Current Status
+    - Fallback banner ads showing on web preview
+    - All ad logic implemented and ready for AdMob integration
+    - Pro user functionality working
 
     ## Contributing
 
