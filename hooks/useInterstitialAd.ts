@@ -7,11 +7,6 @@ export const useInterstitialAd = () => {
 
   // Function to show the ad
   const showAd = useCallback(() => {
-    // Don't show ads for Pro users
-    if (state.isProUser) {
-      return;
-    }
-
     if (Platform.OS === 'web') {
       // On web, show a simple alert as a placeholder
       console.log('Interstitial ad would show here on native platforms');
@@ -21,14 +16,14 @@ export const useInterstitialAd = () => {
     // On native platforms, this would show a real interstitial ad
     // For now, just log it
     console.log('Native interstitial ad would show here');
-  }, [state.isProUser]);
+  }, []);
 
   const loadAd = useCallback(() => {
     // Placeholder for loading ads
-    if (Platform.OS !== 'web' && !state.isProUser) {
+    if (Platform.OS !== 'web') {
       console.log('Loading interstitial ad...');
     }
-  }, [state.isProUser]);
+  }, []);
 
   return {
     showInterstitialAd: showAd,

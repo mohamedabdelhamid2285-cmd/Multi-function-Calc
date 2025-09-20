@@ -154,10 +154,10 @@ export default function MatrixScreen() {
 
   // Show interstitial ad after successful calculation
   useEffect(() => {
-    if (hasShownResult && !state.isProUser) {
+    if (hasShownResult) {
       showInterstitialAd();
     }
-  }, [hasShownResult, state.isProUser, showInterstitialAd]);
+  }, [hasShownResult, showInterstitialAd]);
 
   useEffect(() => {
     if (currentOperation) {

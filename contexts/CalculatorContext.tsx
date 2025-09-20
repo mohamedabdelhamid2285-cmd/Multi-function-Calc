@@ -16,7 +16,6 @@ interface CalculatorState {
   storeActive: boolean; // Add storeActive state for STO mode
   variables: { [key: string]: number }; // Store variables (A, B, C, X, Y)
   calculationCount: number; // Track calculation count for ad display
-  isProUser: boolean; // Track if user has purchased Pro version
 }
 
 type CalculatorAction =
@@ -41,7 +40,6 @@ type CalculatorAction =
   | { type: 'INSERT_VARIABLE'; payload: string } // Action to insert a variable into expression
   | { type: 'INCREMENT_CALCULATION_COUNT' } // Action to increment calculation count
   | { type: 'RESET_CALCULATION_COUNT' } // Action to reset calculation count
-  | { type: 'SET_PRO_USER'; payload: boolean }; // Action to set Pro user status
 
 const initialState: CalculatorState = {
   expression: '',
@@ -63,7 +61,6 @@ const initialState: CalculatorState = {
     'Y': 0,
   },
   calculationCount: 0, // Initialize calculation count
-  isProUser: false, // Default to free user
 };
 
 // Helper function to check if a character is an operator
@@ -375,13 +372,6 @@ const calculatorReducer = (state: CalculatorState, action: CalculatorAction): Ca
         calculationCount: 0,
       };
 
-    case 'SET_PRO_USER':
-      console.log('Setting Pro user status to:', action.payload);
-      return {
-        ...state,
-        isProUser: action.payload,
-      };
-
     case 'EQUALS':
       try {
         if (!state.expression) return resetModes(state);
@@ -457,9 +447,6 @@ export const CalculatorProvider: React.FC<CalculatorProviderProps> = ({ children
 
   // Function to check if interstitial ad should be shown (every 10 calculations)
   const shouldShowInterstitialAd = () => {
-    if (state.isProUser) {
-      return false;
-    }
     const shouldShow = state.calculationCount >= 10;
     return shouldShow;
   };

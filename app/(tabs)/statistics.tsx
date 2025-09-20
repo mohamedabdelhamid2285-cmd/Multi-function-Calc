@@ -107,10 +107,10 @@ export default function StatisticsScreen() {
 
   // Show interstitial ad after successful calculation
   useEffect(() => {
-    if (hasShownResult && !state.isProUser) {
+    if (hasShownResult) {
       showInterstitialAd();
     }
-  }, [hasShownResult, state.isProUser, showInterstitialAd]);
+  }, [hasShownResult, showInterstitialAd]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
