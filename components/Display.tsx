@@ -44,18 +44,31 @@ import React from 'react';
                   SHIFT
                 </Text>
               )}
-              {state.alphaActive && (
+              {state.isAlphaModeActive && (
                 <Text style={[styles.modeIndicator, { color: '#FF6347' }]}>
                   ALPHA
                 </Text>
               )}
-              {state.storeActive && (
+              {state.selectedVariable && (
                 <Text style={[styles.modeIndicator, { color: '#60A5FA' }]}>
-                  STO
+                  {state.selectedVariable}
                 </Text>
               )}
             </View>
           </View>
+
+          {/* Variable Status Bar */}
+          {Object.entries(state.variables).some(([_, value]) => value !== 0) && (
+            <View style={styles.variableBar}>
+              {Object.entries(state.variables).map(([variable, value]) => 
+                value !== 0 ? (
+                  <Text key={variable} style={[styles.variableText, { color: textColor }]}>
+                    {variable}={value.toFixed(2)}
+                  </Text>
+                ) : null
+              )}
+            </View>
+          )}
 
           <ScrollView
             style={styles.displayArea}
@@ -106,6 +119,17 @@ import React from 'react';
         fontSize: 14,
         fontWeight: 'bold',
         marginLeft: 8,
+      },
+      variableBar: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        marginBottom: 8,
+        gap: 8,
+      },
+      variableText: {
+        fontSize: 12,
+        fontWeight: '600',
+        opacity: 0.8,
       },
       displayArea: {
         flex: 1,

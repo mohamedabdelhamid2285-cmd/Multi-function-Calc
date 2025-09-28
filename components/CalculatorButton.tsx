@@ -48,7 +48,8 @@ export default function CalculatorButton({
 
   const buttonStyle: ViewStyle = {
     flex,
-    margin: 4,
+    margin: 2,
+    minHeight: 48,
     borderRadius: 12,
     overflow: 'hidden',
     elevation: 3,
@@ -63,6 +64,7 @@ export default function CalculatorButton({
     fontSize,
     fontWeight: '600',
     textAlign: 'center',
+    flexShrink: 1,
   };
 
   return (
@@ -91,6 +93,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 4,
   },
 });

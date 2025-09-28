@@ -12,8 +12,9 @@ interface CalculatorState {
   theme: 'light' | 'dark'; // Add theme to state
   memoryValue: number; // Add memoryValue to state
   shiftActive: boolean; // Add shiftActive state
-  alphaActive: boolean; // Add alphaActive state
-  storeActive: boolean; // Add storeActive state for STO mode
+  isAlphaModeActive: boolean; // New ALPHA mode state
+  selectedVariable: string | null; // Currently selected variable (A, B, C, X, Y)
+  valueToStore: number | null; // Value to be stored when in ALPHA mode
   variables: { [key: string]: number }; // Store variables (A, B, C, X, Y)
   calculationCount: number; // Track calculation count for ad display
 }
@@ -34,10 +35,11 @@ type CalculatorAction =
   | { type: 'MEMORY_RECALL' } // Action for memory recall
   | { type: 'MEMORY_CLEAR' } // Action for memory clear
   | { type: 'TOGGLE_SHIFT' } // Action for toggling shift mode
-  | { type: 'TOGGLE_ALPHA' } // Action for toggling alpha mode
-  | { type: 'TOGGLE_STORE' } // Action for toggling store mode
-  | { type: 'STORE_VARIABLE'; payload: { variableName: string; value: number } } // Action to store a variable
-  | { type: 'INSERT_VARIABLE'; payload: string } // Action to insert a variable into expression
+  | { type: 'TOGGLE_ALPHA' } // Action for toggling ALPHA mode
+  | { type: 'SELECT_VARIABLE'; payload: string } // Action to select a variable (A, B, C, X, Y)
+  | { type: 'STORE_TO_VARIABLE' } // Action to store value to selected variable
+  | { type: 'RECALL_VARIABLE'; payload: string } // Action to recall a variable value
+  | { type: 'CLEAR_VARIABLES' } // Action to clear all variables
   | { type: 'INCREMENT_CALCULATION_COUNT' } // Action to increment calculation count
   | { type: 'RESET_CALCULATION_COUNT' } // Action to reset calculation count
 
@@ -51,8 +53,9 @@ const initialState: CalculatorState = {
   theme: 'light', // Default theme
   memoryValue: 0, // Default memory value
   shiftActive: false, // Default shift state
-  alphaActive: false, // Default alpha state
-  storeActive: false, // Default store state
+  isAlphaModeActive: false, // Default ALPHA mode state
+  selectedVariable: null, // No variable selected initially
+  valueToStore: null, // No value to store initially
   variables: {
     'A': 0,
     'B': 0,
@@ -72,9 +75,14 @@ const isFunction = (char: string) => ['sin', 'cos', 'tan', 'log', 'sqrt', 'log10
 const calculatorReducer = (state: CalculatorState, action: CalculatorAction): CalculatorState => {
   // Reset alpha/store modes on most actions, unless it's a specific variable action
   const resetModes = (currentState: CalculatorState) => {
-    if (action.type !== 'TOGGLE_ALPHA' && action.type !== 'TOGGLE_STORE' &&
-        action.type !== 'STORE_VARIABLE' && action.type !== 'INSERT_VARIABLE') {
-      return { ...currentState, alphaActive: false, storeActive: false };
+    if (action.type !== 'TOGGLE_ALPHA' && action.type !== 'SELECT_VARIABLE' &&
+        action.type !== 'STORE_TO_VARIABLE' && action.type !== 'RECALL_VARIABLE') {
+      return { 
+        ...currentState, 
+        isAlphaModeActive: false, 
+        selectedVariable: null, 
+        valueToStore: null 
+      };
     }
     return currentState;
   };
@@ -320,43 +328,68 @@ const calculatorReducer = (state: CalculatorState, action: CalculatorAction): Ca
       };
 
     case 'TOGGLE_ALPHA':
+      // When ALPHA is pressed, enter ALPHA mode and capture current value
+      const currentValue = parseFloat(state.result) || 0;
       return {
         ...state,
-        alphaActive: !state.alphaActive,
-        storeActive: false, // Deactivate store mode when alpha is toggled
+        isAlphaModeActive: !state.isAlphaModeActive,
+        valueToStore: state.isAlphaModeActive ? null : currentValue,
+        selectedVariable: null, // Reset selected variable
         error: null,
       };
 
-    case 'TOGGLE_STORE':
+    case 'SELECT_VARIABLE':
+      // Select a variable when in ALPHA mode
+      if (!state.isAlphaModeActive) {
+        return state; // Do nothing if not in ALPHA mode
+      }
       return {
         ...state,
-        storeActive: !state.storeActive,
-        alphaActive: false, // Deactivate alpha mode when store is toggled
+        selectedVariable: action.payload,
         error: null,
       };
 
-    case 'STORE_VARIABLE':
-      console.log('STORE_VARIABLE: Storing variable', action.payload.variableName, 'with value', action.payload.value); // Debug log
-      newState = {
+    case 'STORE_TO_VARIABLE':
+      // Store the value to the selected variable and exit ALPHA mode
+      if (!state.isAlphaModeActive || !state.selectedVariable || state.valueToStore === null) {
+        return state; // Do nothing if conditions aren't met
+      }
+      console.log('STORE_TO_VARIABLE: Storing', state.valueToStore, 'to variable', state.selectedVariable);
+      return {
         ...state,
         variables: {
           ...state.variables,
-          [action.payload.variableName]: action.payload.value,
+          [state.selectedVariable]: state.valueToStore,
         },
-        storeActive: false, // Exit store mode after storing
+        isAlphaModeActive: false, // Exit ALPHA mode
+        selectedVariable: null, // Clear selected variable
+        valueToStore: null, // Clear value to store
         error: null,
       };
-      return newState;
 
-    case 'INSERT_VARIABLE':
-      newState = {
+    case 'RECALL_VARIABLE':
+      // Recall a variable value and insert it into the expression
+      const variableValue = state.variables[action.payload] || 0;
+      return {
         ...state,
-        expression: state.expression + action.payload,
-        lastInputType: 'function', // Treat variable insertion like a function for input type
-        alphaActive: false, // Exit alpha mode after inserting
+        expression: state.expression + variableValue.toString(),
+        lastInputType: 'number',
         error: null,
       };
-      return newState;
+
+    case 'CLEAR_VARIABLES':
+      // Clear all variable values
+      return {
+        ...state,
+        variables: {
+          'A': 0,
+          'B': 0,
+          'C': 0,
+          'X': 0,
+          'Y': 0,
+        },
+        error: null,
+      };
 
     case 'INCREMENT_CALCULATION_COUNT':
       console.log('Incrementing calculation count from', state.calculationCount, 'to', state.calculationCount + 1);
